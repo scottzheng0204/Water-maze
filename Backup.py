@@ -84,7 +84,7 @@ def data():
             print(data, type(data))
             if(isinstance(data, list) == True):
                 res = '{ "data": '+ str(data) +' }'
-                if((now - Time).seconds % 5 == 0):
+                if((now - Time).seconds % 2 == 0):
                     sqlInsert(db, res)
                     Time = now
                     print("mysql load sucess at ")
@@ -119,10 +119,14 @@ def find(num):
             cursor.execute(sql)
             print("sql commit sucess")
             results = cursor.fetchall()
-            for row in results:
-                row[1] = row[1] + ","
-                print(row[1])
-            return row[1]
+            print("fetchall sucess!")
+            print(results)
+            # mylist =[]
+            # for row in results:
+            #     mylist.append(row[1])
+            # print(mylist)
+            print(json.dumps(results))
+            return json.dumps(results)
         except:
             print("Error:unable to fetch data")
     return '{ "data": "-1" }'

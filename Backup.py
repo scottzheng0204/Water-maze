@@ -125,7 +125,7 @@ def find(num):
             return row[1]
         except:
             print("Error:unable to fetch data")
-    return ""
+    return '{ "data": "-1" }'
 
 if __name__ == '__main__':
    app.run()

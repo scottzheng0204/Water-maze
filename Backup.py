@@ -112,24 +112,25 @@ def find(num):
         sql = "SELECT * FROM DATA \
             WHERE TIME > '%s' and TIME < '%s'"%\
             (beginTime.strftime('%Y-%m-%d %H:%M:%S'), (beginTime + datetime.timedelta(minutes=30)).strftime('%Y-%m-%d %H:%M:%S'))
-        try:
-            print("Im trying")
-            db.ping(reconnect = True)
-            # 执行sql语句
-            cursor.execute(sql)
-            print("sql commit sucess")
-            results = cursor.fetchall()
-            print("fetchall sucess!")
-            print(results)
-            # mylist =[]
-            # for row in results:
-            #     mylist.append(row[1])
-            # print(mylist)
-            print(json.dumps(results))
-            return json.dumps(results)
-        except:
-            print("Error:unable to fetch data")
-    return '{ "data": "-1" }'
+        #try:
+        print("Im trying")
+        db.ping(reconnect = True)
+        # 执行sql语句
+        cursor.execute(sql)
+        print("sql commit sucess")
+        results = cursor.fetchall()
+        print("fetchall sucess!")
+        print(results)
+        # mylist =[]
+        # for row in results:
+        #     mylist.append(row[1])
+        # print(mylist)
+        print(json.dumps(results, default=str))
+        return json.dumps(results, default=str)
+        # except:
+        #     print("Error:unable to fetch data")
+    else:
+        return '{ "data": "-1" }'
 
 if __name__ == '__main__':
    app.run()

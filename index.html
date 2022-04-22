@@ -46,7 +46,8 @@
                   if (xmlhttp.readyState==4 && xmlhttp.status==200)
                   {
                     let res = xmlhttp.response;
-                    console.log(res);
+                    console.log(typeof res);
+                    console.log(res[1])
                     // point.push(JSON.parse(res).data);
                     // myChart.setOption(option);
                   }

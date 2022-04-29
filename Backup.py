@@ -1,5 +1,7 @@
+from email.policy import default
 from unittest import result
 from urllib.request import Request
+from xml.dom.minidom import TypeInfo
 from flask import Flask, escape, request, url_for
 from flask_cors import CORS
 import json, pymysql, serial, datetime, ast
@@ -7,6 +9,7 @@ import json, pymysql, serial, datetime, ast
 
 Time = datetime.datetime.now()
 beginTime = datetime.datetime.now()#.strftime("%Y-%m-%d %H:%M:%S")#传输开始时间
+print("data begin is" + str(beginTime))
 
 portx = "COM7"
 bps = 115200
@@ -49,7 +52,7 @@ def sqlInsert(db, res):
         # 发生错误时回滚
         db.rollback()
         print("wrong")
-beginTime.minute
+
 def sqlSelect(db, Time):
     # 使用cursor()方法获取操作游标 
     cursor = db.cursor()
@@ -83,15 +86,19 @@ def data():
             now = datetime.datetime.now()
             print(data, type(data))
             if(isinstance(data, list) == True):
-                res = '{ "data": '+ str(data) +' }'
-                if((now - Time).seconds % 2 == 0):
-                    sqlInsert(db, res)
+                #res = '{ "data": '+ str(data) +' }'
+                print("now time " + str(now))
+                print("last time " + str(Time))
+                print((now - Time).seconds % 3)
+                if((now - Time).seconds % 3 == 0):
+                    sqlInsert(db, str(data))
                     Time = now
                     print("mysql load sucess at ")
                     print(Time)
                     print(sqlSelect(db, Time))
-                    print(json.loads(sqlSelect(db, Time)))
-                    return json.loads(sqlSelect(db, Time))
+                    res = '{ "data": '+ str(sqlSelect(db, Time)) +' }'
+                    print(json.loads(res))
+                    return json.loads(res)
                 else:
                     return '{ "data": "-1" }'
             else:
@@ -120,13 +127,17 @@ def find(num):
         print("sql commit sucess")
         results = cursor.fetchall()
         print("fetchall sucess!")
+        #print(results)
+        myList = []
+        for row in results:
+            myList.append(row[1])
+        #res = '{ "data": "'+ str(myList) +'" }'  #.lstrip("[").rstrip("]").replace("\'", "")
+        res = {"data": myList}
         print(results)
-        # mylist =[]
-        # for row in results:
-        #     mylist.append(row[1])
-        # print(mylist)
-        print(json.dumps(results, default=str))
-        return json.dumps(results, default=str)
+        print("----------------------")
+        print(res)
+        # print(json.loads(res))
+        return json.dumps(res)
         # except:
         #     print("Error:unable to fetch data")
     else:

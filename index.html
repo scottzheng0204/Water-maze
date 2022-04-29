@@ -29,6 +29,7 @@
                   if(JSON.parse(res).data != -1)
                     point.push(JSON.parse(res).data)
                     myChart.setOption(option)
+                    console.log(point)
                 }
             }
           }
@@ -37,7 +38,7 @@
           document.getElementById("thrty").addEventListener("click", findTime)
           function findTime() {
               num = 1;
-              point = []
+              point.length = 0
               xmlhttp=new XMLHttpRequest();
               xmlhttp.open("GET",`http://127.0.0.1:5000/find/${num}`,true);
               xmlhttp.send();
@@ -46,10 +47,19 @@
                   if (xmlhttp.readyState==4 && xmlhttp.status==200)
                   {
                     let res = xmlhttp.response;
-                    console.log(typeof res);
-                    console.log(res[1])
-                    // point.push(JSON.parse(res).data);
-                    // myChart.setOption(option);
+                    res = JSON.parse(res).data
+                    res.forEach(e => {
+                      let n = e.substring(1,e.length-2).split(", ")
+                      let arr = []
+                      n.forEach(v=>{
+                        arr.push(parseInt(v))
+                      })
+                      point.push(arr)
+                    });
+                    console.log(point);
+                    option.series.data = point
+                    console.log(option.series.data);
+                    myChart.setOption(option);
                   }
               }
           }
@@ -59,6 +69,9 @@
           var option;
 
           option = {
+            tooltip: {
+              formatter: '({c})'
+            },
             xAxis: {
               name: 'x'
             },
@@ -68,9 +81,9 @@
             series: [
               {
                 type: 'line',
-                showSymbol: false,
                 clip: true,
-                data:point
+                data:point,
+                smooth: true,
               }
             ]
           };

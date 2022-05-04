@@ -11,7 +11,7 @@ Time = datetime.datetime.now()
 beginTime = datetime.datetime.now()#.strftime("%Y-%m-%d %H:%M:%S")#传输开始时间
 print("data begin is" + str(beginTime))
 
-portx = "COM7"
+portx = "COM6"
 bps = 115200
 timex = 5
 ser = serial.Serial(portx, bps, timeout = timex)
@@ -119,29 +119,100 @@ def find(num):
         sql = "SELECT * FROM DATA \
             WHERE TIME > '%s' and TIME < '%s'"%\
             (beginTime.strftime('%Y-%m-%d %H:%M:%S'), (beginTime + datetime.timedelta(minutes=30)).strftime('%Y-%m-%d %H:%M:%S'))
-        #try:
+        try:
+            print("Im trying")
+            db.ping(reconnect = True)
+            # 执行sql语句
+            cursor.execute(sql)
+            print("sql commit sucess")
+            results = cursor.fetchall()
+            print("fetchall sucess!")
+            myList = []
+            for row in results:
+                myList.append(row[1])
+            res = {"data": myList}
+            print(results)
+            print("----------------------")
+            print(res)
+            return json.dumps(res)
+        except:
+            print("Error:unable to fetch data")
+
+    if(num == "2"):
+        print("Im in 2 sql!")
+        sql = "SELECT * FROM DATA \
+            WHERE TIME > '%s' and TIME < '%s'"%\
+            (beginTime + datetime.timedelta(minutes=30)).strftime('%Y-%m-%d %H:%M:%S'), (beginTime + datetime.timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')
+        try:
+            print("Im trying")
+            db.ping(reconnect=True)
+            cursor.execute(sql)
+            print("sql commit sucess")
+            results = cursor.fetchall()
+            print("fetchall sucess!")
+            myList = []
+            for row in results:
+                myList.append(row[1])
+            res = {"data": myList}
+            return json.dumps(res)
+        except:
+            print("Error:We can't find your data under your time")
+    
+    if(num == "3"):
+        print("Im in 3 sql!")
+        sql = "SELECT * FROM DATA \
+            WHERE TIME > '%s' and TIME < '%s'"%\
+            (beginTime + datetime.timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S'), (beginTime + datetime.timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')
+        try:
+            print("Im trying")
+            db.ping(reconnect=True)
+            cursor.execute(sql)
+            print("sql commit sucess")
+            results = cursor.fetchall()
+            print("fetchall sucess!")
+            myList = []
+            for row in results:
+                myList.append(row[1])
+            res = {"data": myList}
+            return json.dumps(res)
+        except:
+            print("Error:We can't find your data under your time")
+
+    else:
+        return '{ "data": "-1" }'
+
+@app.route("/find/<beginTime>/<endTime>")
+def findMytime(beginTime, endTime):
+    year = str(datetime.datetime.now().year)
+    month = str(datetime.datetime.now().month)
+    day = str(datetime.datetime.now().day)
+    beginTime = year + '-' + month + '-' + day + ' ' + beginTime + ':00'
+    endTime = year + '-' + month + '-' + day + ' ' + endTime + ':00'
+    begin = datetime.datetime.strptime(beginTime, '%Y-%m-%d %H:%M:%S')
+    end = datetime.datetime.strptime(endTime, '%Y-%m-%d %H:%M:%S')
+    print(type(beginTime))
+    print(type(endTime))
+    cursor = db.cursor()
+    print("Im in 4 sql!")
+    sql = "SELECT * FROM DATA \
+        WHERE TIME > '%s' and TIME < '%s'"%\
+        (begin, end)
+    try:
         print("Im trying")
-        db.ping(reconnect = True)
-        # 执行sql语句
+        db.ping(reconnect=True)
         cursor.execute(sql)
         print("sql commit sucess")
         results = cursor.fetchall()
         print("fetchall sucess!")
-        #print(results)
         myList = []
         for row in results:
             myList.append(row[1])
-        #res = '{ "data": "'+ str(myList) +'" }'  #.lstrip("[").rstrip("]").replace("\'", "")
         res = {"data": myList}
-        print(results)
-        print("----------------------")
         print(res)
-        # print(json.loads(res))
+        print("return sucess!")
         return json.dumps(res)
-        # except:
-        #     print("Error:unable to fetch data")
-    else:
-        return '{ "data": "-1" }'
+    except:
+        print("Error:We can't find your data under your time")
 
 if __name__ == '__main__':
    app.run()

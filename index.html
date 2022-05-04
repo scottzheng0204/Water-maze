@@ -10,10 +10,16 @@
         <div id="main" style="width: 600px;height:400px;"></div>
         <div>
           <button id="thrty" style="margin-left:60px">30分钟内</button>
-          <button id="oneHour1" style="margin-left:20px">1-2小时</button>
-          <button id="oneHour2" style="margin-left:20px">2-3小时</button>
+          <button id="oneHour1" style="margin-left:20px">30-1小时</button>
+          <button id="oneHour2" style="margin-left:20px">1-2小时</button>
         </div>
-        <input style="margin-left:60px"></input>
+        <div>
+          <input style="margin-left:60px" type="time" id="begin">
+          <input style="margin-left:20px" type="time" id="end">
+          <button id="commit" style="margin-left:20px">提交</button>
+        </div>
+        
+
         <script type="text/javascript">
           var point = []
           function receive(){
@@ -35,34 +41,113 @@
           }
           setInterval(receive, 2000)
 
-          document.getElementById("thrty").addEventListener("click", findTime)
-          function findTime() {
-              num = 1;
-              point.length = 0
-              xmlhttp=new XMLHttpRequest();
-              xmlhttp.open("GET",`http://127.0.0.1:5000/find/${num}`,true);
-              xmlhttp.send();
-              xmlhttp.onreadystatechange=function()
+          document.getElementById("thrty").addEventListener("click", findTime1)
+          function findTime1() {
+            num = 1;
+            point.length = 0;
+            xmlhttp=new XMLHttpRequest();
+            xmlhttp.open("GET",`http://127.0.0.1:5000/find/${num}`,true);
+            xmlhttp.send();
+            xmlhttp.onreadystatechange=function()
+            {
+              if (xmlhttp.readyState==4 && xmlhttp.status==200)
               {
-                  if (xmlhttp.readyState==4 && xmlhttp.status==200)
-                  {
-                    let res = xmlhttp.response;
-                    res = JSON.parse(res).data
-                    res.forEach(e => {
-                      let n = e.substring(1,e.length-2).split(", ")
-                      let arr = []
-                      n.forEach(v=>{
-                        arr.push(parseInt(v))
-                      })
-                      point.push(arr)
-                    });
-                    console.log(point);
-                    option.series.data = point
-                    console.log(option.series.data);
-                    myChart.setOption(option);
-                  }
+                let res = xmlhttp.response;
+                res = JSON.parse(res).data;
+                res.forEach(e => {
+                  let n = e.substring(1,e.length-2).split(", ");
+                  let arr = [];
+                  n.forEach(v=>{
+                    arr.push(parseInt(v));
+                  })
+                  point.push(arr);
+                });
+                myChart.setOption(option);
               }
+            }
           }
+
+          document.getElementById("oneHour1").addEventListener("click", findTime2)
+          function findTime2() {
+            num = 2;
+            point.length = 0;
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("GET", `http://127.0.0.1:5000/find/${num}`,true);
+            xmlhttp.send();
+            xmlhttp.onreadystatechange=function()
+            {
+              if(xmlhttp.readyState == 4 && xmlhttp.status == 200)
+              {
+                let res = xmlhttp.response;
+                res = JSON.parse(res).data;
+                res.forEach(e => {
+                  let n = e.substring(1, e.length-2).split(", ");
+                  let arr = [];
+                  n.forEach(v => {
+                    arr.push(parseInt(v));
+                  })
+                  point.push(arr);
+                });
+                myChart.setOption(option);
+              }
+            }
+          }
+
+          document.getElementById("oneHour2").addEventListener("click", findTime3)
+          function findTime3() {
+            num = 3;
+            point.length = 0;
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("GET", `http://127.0.0.1:5000/find/${num}`,true);
+            xmlhttp.send();
+            xmlhttp.onreadystatechange=function()
+            {
+              if(xmlhttp.readyState == 4 && xmlhttp.status == 200)
+              {
+                let res = xmlhttp.response;
+                res = JSON.parse(res).data;
+                res.forEach(e => {
+                  let n = e.substring(1, e.length-2).split(", ");
+                  let arr = [];
+                  n.forEach(v => {
+                    arr.push(parseInt(v));
+                  })
+                  point.push(arr);
+                });
+                myChart.setOption(option);
+              }
+            }
+          }
+
+          document.getElementById("commit").addEventListener("click", findTime4)
+          function findTime4(){
+            point.length = 0;
+            beginTime = document.getElementById("begin").value
+            endTime = document.getElementById("end").value
+            xmlhttp=new XMLHttpRequest();
+            xmlhttp.open("GET",`http://127.0.0.1:5000/find/${beginTime}/${endTime}`,true);
+            xmlhttp.send();
+            xmlhttp.onreadystatechange=function()
+            {
+              if (xmlhttp.readyState==4 && xmlhttp.status==200)
+              {
+                let res = xmlhttp.response;
+                res = JSON.parse(res).data;
+                console.log(res)
+                res.forEach(e => {
+                  let n = e.substring(1,e.length-2).split(", ");
+                  let arr = [];
+                  n.forEach(v=>{
+                    arr.push(parseInt(v));
+                  })
+                  point.push(arr);
+                  console.log(point)
+                });
+                myChart.setOption(option);
+              }
+            }
+          }
+
           // 基于准备好的dom，初始化echarts实例
           var chartDom = document.getElementById('main');
           var myChart = echarts.init(chartDom);

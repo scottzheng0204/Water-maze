@@ -133,16 +133,23 @@
               {
                 let res = xmlhttp.response;
                 res = JSON.parse(res).data;
-                console.log(res)
+                console.log(res);
                 res.forEach(e => {
-                  let n = e.substring(1,e.length-2).split(", ");
+                  console.log(e);
+                  let n = e.substring(1, e.length-1).split(", ");
+                  console.log(n)
                   let arr = [];
-                  n.forEach(v=>{
-                    arr.push(parseInt(v));
+                  n.forEach(v => {
+                    let c = v.split(",")
+                    c.forEach(a => {
+                      console.log(a)
+                      arr.push(parseInt(a))
+                    })
                   })
+                  console.log(arr);
                   point.push(arr);
-                  console.log(point)
                 });
+                console.log(point)
                 myChart.setOption(option);
               }
             }

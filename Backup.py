@@ -253,3 +253,5 @@ if __name__ == '__main__':
 
 ser1.close()
 ser2.close()
+ser3.close()
+ser4.close()

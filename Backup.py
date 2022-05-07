@@ -1,4 +1,5 @@
 from email.policy import default
+from socket import timeout
 from unittest import result
 from urllib.request import Request
 from xml.dom.minidom import TypeInfo
@@ -8,13 +9,29 @@ import json, pymysql, serial, datetime, ast
 
 
 Time = datetime.datetime.now()
+
 beginTime = datetime.datetime.now()#.strftime("%Y-%m-%d %H:%M:%S")#传输开始时间
 print("data begin is" + str(beginTime))
 
-portx = "COM6"
+portx = "COM11"
 bps = 115200
 timex = 5
-ser = serial.Serial(portx, bps, timeout = timex)
+ser1 = serial.Serial(portx, bps, timeout = timex)
+
+portx = "COM12"
+bps = 115200
+timex = 5
+ser2 = serial.Serial(portx, bps, timeout = timex)
+
+portx = "COM15"
+bps = 115200
+timex = 5
+ser3 = serial.Serial(portx, bps, timeout = timex)
+
+portx = "COM16"
+bps = 115200
+timex = 5
+ser4 = serial.Serial(portx, bps, timeout = timex)
 
 #连接数据库
 db = pymysql.connect(host='localhost',
@@ -33,7 +50,8 @@ cursor.execute(sql)
 
 db.close()
 
-def sqlInsert(db, res):
+
+def sqlInsert(res):
     # 使用cursor()方法获取操作游标 
     cursor = db.cursor()
  
@@ -53,7 +71,7 @@ def sqlInsert(db, res):
         db.rollback()
         print("wrong")
 
-def sqlSelect(db, Time):
+def sqlSelect(Time):
     # 使用cursor()方法获取操作游标 
     cursor = db.cursor()
     
@@ -72,45 +90,64 @@ def sqlSelect(db, Time):
     except:
         print ("Error: unable to fetch data")
 
+def dataFix(data):
+    global Time
+    data = ast.literal_eval(data)
+    now = datetime.datetime.now()
+    if(isinstance(data, list) == True):
+        #res = '{ "data": '+ str(data) +' }'
+        print((now - Time).seconds % 3)
+        if((now - Time).seconds % 3 == 0):
+            sqlInsert(str(data))
+            Time = now
+            print("mysql load sucess at ")
+            print(Time)
+            print(sqlSelect(Time))
+            res = '{ "data": '+ str(sqlSelect(Time)) +' }'
+            return json.loads(res)
+        else:
+            return '{ "data": "-1" }'
+    else:
+        return '{ "data": "-1" }'
+
+
 app = Flask(__name__)
 CORS(app, supports_credentials=True, resources=r'/*')
 
 @app.route('/')
 def data():
     global Time
-    serial.Serial.flushInput(ser)
-    data = ser.readline().decode().replace("\r\n", "")
-    if(data):
-        if(data != "-1" and data != ""):
-            data = ast.literal_eval(data)
-            now = datetime.datetime.now()
-            print(data, type(data))
-            if(isinstance(data, list) == True):
-                #res = '{ "data": '+ str(data) +' }'
-                print("now time " + str(now))
-                print("last time " + str(Time))
-                print((now - Time).seconds % 3)
-                if((now - Time).seconds % 3 == 0):
-                    sqlInsert(db, str(data))
-                    Time = now
-                    print("mysql load sucess at ")
-                    print(Time)
-                    print(sqlSelect(db, Time))
-                    res = '{ "data": '+ str(sqlSelect(db, Time)) +' }'
-                    print(json.loads(res))
-                    return json.loads(res)
-                else:
-                    return '{ "data": "-1" }'
-            else:
-                return '{ "data": "-1" }'
-        else:
-            print("your data is trash")
-            return '{ "data": "-1" }'
+    serial.Serial.flushInput(ser1)
+    serial.Serial.flushInput(ser2)
+    serial.Serial.flushInput(ser3)
+    serial.Serial.flushInput(ser4)
+
+    data1 = ser1.readline().decode().replace("\r\n", "")
+    data2 = ser2.readline().decode().replace("\r\n", "")
+    data3 = ser3.readline().decode().replace("\r\n", "")
+    data4 = ser4.readline().decode().replace("\r\n", "")
+
+    if(data1 != "-1" and data1 != ""):
+        print("------------------------")
+        print("It's ser1 data")
+        return dataFix(data1)
+    if(data2 != "-1" and data2 != ""):
+        print("------------------------")
+        print("It's ser2 data")
+        return dataFix(data2)
+    if(data3 != "-1" and data3 != ""):
+        print("------------------------")
+        print("It's ser3 data")
+        return dataFix(data3)
+    if(data4 != "-1" and data4 != ""):
+        print("------------------------")
+        print("It's ser4 data")
+        return dataFix(data4)
     else:
         print("ser is not open")
         return '{ "data": "-1" }'
 
-@app.route("/find/<num>")
+@app.route("/find/<num>") 
 def find(num):
     # 使用cursor()方法获取操作游标
     cursor = db.cursor()
@@ -131,9 +168,6 @@ def find(num):
             for row in results:
                 myList.append(row[1])
             res = {"data": myList}
-            print(results)
-            print("----------------------")
-            print(res)
             return json.dumps(res)
         except:
             print("Error:unable to fetch data")
@@ -217,4 +251,5 @@ def findMytime(beginTime, endTime):
 if __name__ == '__main__':
    app.run()
 
-ser.close()
+ser1.close()
+ser2.close()

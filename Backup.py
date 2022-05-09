@@ -2,36 +2,47 @@ from email.policy import default
 from socket import timeout
 from unittest import result
 from urllib.request import Request
+from warnings import catch_warnings
 from xml.dom.minidom import TypeInfo
-from flask import Flask, escape, request, url_for
+from flask import Flask, request
 from flask_cors import CORS
 import json, pymysql, serial, datetime, ast
 
-
 Time = datetime.datetime.now()
 
-beginTime = datetime.datetime.now()#.strftime("%Y-%m-%d %H:%M:%S")#传输开始时间
-print("data begin is" + str(beginTime))
+beginTime = datetime.datetime.now()
 
 portx = "COM11"
 bps = 115200
 timex = 5
-ser1 = serial.Serial(portx, bps, timeout = timex)
+try:
+    ser1 = serial.Serial(portx, bps, timeout = timex)
+except:
+    print("cammer1 ser is not open")
 
 portx = "COM12"
 bps = 115200
 timex = 5
-ser2 = serial.Serial(portx, bps, timeout = timex)
+try:
+    ser2 = serial.Serial(portx, bps, timeout = timex)
+except:
+    print("cammer2 ser is not open")
 
 portx = "COM15"
 bps = 115200
 timex = 5
-ser3 = serial.Serial(portx, bps, timeout = timex)
+try:
+    ser3 = serial.Serial(portx, bps, timeout = timex)
+except:
+    print("cammer3 ser is not open")
 
 portx = "COM16"
 bps = 115200
 timex = 5
-ser4 = serial.Serial(portx, bps, timeout = timex)
+try:
+    ser4 = serial.Serial(portx, bps, timeout = timex)
+except:
+    print("cammer4 ser is not open")
 
 #连接数据库
 db = pymysql.connect(host='localhost',
@@ -47,9 +58,6 @@ sql = """CREATE TABLE data (
     time  datetime NOT NULL,
     location varchar(255))"""
 cursor.execute(sql)
-
-db.close()
-
 
 def sqlInsert(res):
     # 使用cursor()方法获取操作游标 
@@ -95,8 +103,6 @@ def dataFix(data):
     data = ast.literal_eval(data)
     now = datetime.datetime.now()
     if(isinstance(data, list) == True):
-        #res = '{ "data": '+ str(data) +' }'
-        print((now - Time).seconds % 3)
         if((now - Time).seconds % 3 == 0):
             sqlInsert(str(data))
             Time = now
@@ -144,7 +150,7 @@ def data():
         print("It's ser4 data")
         return dataFix(data4)
     else:
-        print("ser is not open")
+        print("cammer is not open")
         return '{ "data": "-1" }'
 
 @app.route("/find/<num>") 
@@ -163,60 +169,78 @@ def find(num):
             cursor.execute(sql)
             print("sql commit sucess")
             results = cursor.fetchall()
-            print("fetchall sucess!")
-            myList = []
-            for row in results:
-                myList.append(row[1])
-            res = {"data": myList}
-            return json.dumps(res)
+            if(results == True):
+                print("fetchall sucess!")
+                myList = []
+                for row in results:
+                    myList.append(row[1])
+                res = {"data": myList}
+                return json.dumps(res)
+            else:
+                print("Error:We can't find your data under your time")
+                return '{ "data": "-1" }'
         except:
-            print("Error:unable to fetch data")
+            print("Error:Unexpected wrong")
+            return '{ "data": "-2" }'
 
     if(num == "2"):
         print("Im in 2 sql!")
         sql = "SELECT * FROM DATA \
             WHERE TIME > '%s' and TIME < '%s'"%\
-            (beginTime + datetime.timedelta(minutes=30)).strftime('%Y-%m-%d %H:%M:%S'), (beginTime + datetime.timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')
+            ((beginTime + datetime.timedelta(minutes=30)).strftime('%Y-%m-%d %H:%M:%S'), (beginTime + datetime.timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S'))
         try:
             print("Im trying")
             db.ping(reconnect=True)
             cursor.execute(sql)
             print("sql commit sucess")
             results = cursor.fetchall()
-            print("fetchall sucess!")
-            myList = []
-            for row in results:
-                myList.append(row[1])
-            res = {"data": myList}
-            return json.dumps(res)
+            if(results == True):
+                print("fetchall sucess!")
+                myList = []
+                for row in results:
+                    myList.append(row[1])
+                res = {"data": myList}
+                return json.dumps(res)
+            else:
+                print("Error:We can't find your data under your time")
+                return '{ "data": "-1" }'
         except:
-            print("Error:We can't find your data under your time")
+            print("Error:Unexpected wrong")
+            return '{ "data": "-2" }'
     
     if(num == "3"):
         print("Im in 3 sql!")
         sql = "SELECT * FROM DATA \
             WHERE TIME > '%s' and TIME < '%s'"%\
-            (beginTime + datetime.timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S'), (beginTime + datetime.timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S')
+            ((beginTime + datetime.timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S'), (beginTime + datetime.timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S'))
         try:
             print("Im trying")
             db.ping(reconnect=True)
             cursor.execute(sql)
             print("sql commit sucess")
             results = cursor.fetchall()
-            print("fetchall sucess!")
-            myList = []
-            for row in results:
-                myList.append(row[1])
-            res = {"data": myList}
-            return json.dumps(res)
+            if(results == True):
+                print("fetchall sucess!")
+                myList = []
+                for row in results:
+                    myList.append(row[1])
+                res = {"data": myList}
+                return json.dumps(res)
+            else:
+                print("Error:We can't find your data under your time")
+                return '{ "data": "-1" }'
         except:
-            print("Error:We can't find your data under your time")
+            print("Error:Unexpected wrong")
+            return '{ "data": "-2" }'
 
     else:
         return '{ "data": "-1" }'
 
 @app.route("/find/<beginTime>/<endTime>")
 def findMytime(beginTime, endTime):
+    if(beginTime > endTime):
+        print("wrong input!")
+        return '{ "data": "-3" }'
     year = str(datetime.datetime.now().year)
     month = str(datetime.datetime.now().month)
     day = str(datetime.datetime.now().day)
@@ -224,8 +248,7 @@ def findMytime(beginTime, endTime):
     endTime = year + '-' + month + '-' + day + ' ' + endTime + ':00'
     begin = datetime.datetime.strptime(beginTime, '%Y-%m-%d %H:%M:%S')
     end = datetime.datetime.strptime(endTime, '%Y-%m-%d %H:%M:%S')
-    print(type(beginTime))
-    print(type(endTime))
+
     cursor = db.cursor()
     print("Im in 4 sql!")
     sql = "SELECT * FROM DATA \
@@ -237,21 +260,21 @@ def findMytime(beginTime, endTime):
         cursor.execute(sql)
         print("sql commit sucess")
         results = cursor.fetchall()
-        print("fetchall sucess!")
-        myList = []
-        for row in results:
-            myList.append(row[1])
-        res = {"data": myList}
-        print(res)
-        print("return sucess!")
-        return json.dumps(res)
+        if(results == True):
+            print("fetchall sucess!")
+            myList = []
+            for row in results:
+                myList.append(row[1])
+            res = {"data": myList}
+            print(res)
+            print("return sucess!")
+            return json.dumps(res)
+        else:
+            print("Error:We can't find your data under your time")
+            return '{ "data": "-1" }'
     except:
-        print("Error:We can't find your data under your time")
+        print("Error:Unexpected wrong")
+        return '{ "data": "-2" }'
 
 if __name__ == '__main__':
    app.run()
-
-ser1.close()
-ser2.close()
-ser3.close()
-ser4.close()

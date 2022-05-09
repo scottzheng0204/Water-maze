@@ -54,18 +54,28 @@
               {
                 let res = xmlhttp.response;
                 res = JSON.parse(res).data;
-                res.forEach(e => {
-                  let n = e.substring(1, e.length-1).split(", ");
-                  let arr = [];
-                  n.forEach(v => {
-                    let c = v.split(",")
-                    c.forEach(a => {
-                      arr.push(parseInt(a))
+                if(res == "-1")
+                {
+                  alert("你所查找的时间并不存在")
+                }
+                if(res = "-2")
+                {
+                  alert("未知错误")
+                }
+                else{
+                  res.forEach(e => {
+                    let n = e.substring(1, e.length-1).split(", ");
+                    let arr = [];
+                    n.forEach(v => {
+                      let c = v.split(",")
+                      c.forEach(a => {
+                        arr.push(parseInt(a))
+                      })
                     })
-                  })
-                  point.push(arr);
-                });
-                myChart.setOption(option);
+                    point.push(arr);
+                  });
+                  myChart.setOption(option);
+                }
               }
             }
           }
@@ -83,18 +93,28 @@
               {
                 let res = xmlhttp.response;
                 res = JSON.parse(res).data;
-                res.forEach(e => {
-                  let n = e.substring(1, e.length-1).split(", ");
-                  let arr = [];
-                  n.forEach(v => {
-                    let c = v.split(",")
-                    c.forEach(a => {
-                      arr.push(parseInt(a))
+                if(res == "-1")
+                {
+                  alert("你查找的数据不存在")
+                }
+                if(res == "-2")
+                {
+                  alert("未知错误")
+                }
+                else{
+                  res.forEach(e => {
+                    let n = e.substring(1, e.length-1).split(", ");
+                    let arr = [];
+                    n.forEach(v => {
+                      let c = v.split(",")
+                      c.forEach(a => {
+                        arr.push(parseInt(a))
+                      })
                     })
-                  })
-                  point.push(arr);
-                });
-                myChart.setOption(option);
+                    point.push(arr);
+                  });
+                  myChart.setOption(option);
+                }
               }
             }
           }
@@ -112,18 +132,28 @@
               {
                 let res = xmlhttp.response;
                 res = JSON.parse(res).data;
-                res.forEach(e => {
-                  let n = e.substring(1, e.length-1).split(", ");
-                  let arr = [];
-                  n.forEach(v => {
-                    let c = v.split(",")
-                    c.forEach(a => {
-                      arr.push(parseInt(a))
+                if(res == "-1")
+                {
+                  alert("你查找的数据不存在")
+                }
+                if(res == "-2")
+                {
+                  alert("未知错误")
+                }
+                else{
+                  res.forEach(e => {
+                    let n = e.substring(1, e.length-1).split(", ");
+                    let arr = [];
+                    n.forEach(v => {
+                      let c = v.split(",")
+                      c.forEach(a => {
+                        arr.push(parseInt(a))
+                      })
                     })
-                  })
-                  point.push(arr);
-                });
-                myChart.setOption(option);
+                    point.push(arr);
+                  });
+                  myChart.setOption(option);
+                }
               }
             }
           }
@@ -142,18 +172,32 @@
               {
                 let res = xmlhttp.response;
                 res = JSON.parse(res).data;
-                res.forEach(e => {
-                  let n = e.substring(1, e.length-1).split(", ");
-                  let arr = [];
-                  n.forEach(v => {
-                    let c = v.split(",")
-                    c.forEach(a => {
-                      arr.push(parseInt(a))
+                if(res == "-1")
+                {
+                  alert("你查找的数据不存在")
+                }
+                if(res == "-2")
+                {
+                  alert("未知错误")
+                }
+                if(res == "-3")
+                {
+                  alert("输入错误")
+                }
+                else{
+                  res.forEach(e => {
+                    let n = e.substring(1, e.length-1).split(", ");
+                    let arr = [];
+                    n.forEach(v => {
+                      let c = v.split(",")
+                      c.forEach(a => {
+                        arr.push(parseInt(a))
+                      })
                     })
-                  })
-                  point.push(arr);
-                });
-                myChart.setOption(option);
+                    point.push(arr);
+                  });
+                  myChart.setOption(option);
+                }
               }
             }
           }

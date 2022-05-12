@@ -8,41 +8,31 @@ from flask import Flask, request
 from flask_cors import CORS
 import json, pymysql, serial, datetime, ast
 
+#设置初始时间
 Time = datetime.datetime.now()
-
 beginTime = datetime.datetime.now()
+print(beginTime)
 
+#打开串口
 portx = "COM11"
 bps = 115200
 timex = 5
-try:
-    ser1 = serial.Serial(portx, bps, timeout = timex)
-except:
-    print("cammer1 ser is not open")
+ser1 = serial.Serial(portx, bps, timeout = timex)
 
 portx = "COM12"
 bps = 115200
 timex = 5
-try:
-    ser2 = serial.Serial(portx, bps, timeout = timex)
-except:
-    print("cammer2 ser is not open")
+ser2 = serial.Serial(portx, bps, timeout = timex)
 
 portx = "COM15"
 bps = 115200
 timex = 5
-try:
-    ser3 = serial.Serial(portx, bps, timeout = timex)
-except:
-    print("cammer3 ser is not open")
+ser3 = serial.Serial(portx, bps, timeout = timex)
 
 portx = "COM16"
 bps = 115200
 timex = 5
-try:
-    ser4 = serial.Serial(portx, bps, timeout = timex)
-except:
-    print("cammer4 ser is not open")
+ser4 = serial.Serial(portx, bps, timeout = timex)
 
 #连接数据库
 db = pymysql.connect(host='localhost',
@@ -58,7 +48,9 @@ sql = """CREATE TABLE data (
     time  datetime NOT NULL,
     location varchar(255))"""
 cursor.execute(sql)
+cursor.close()
 
+#数据库插入
 def sqlInsert(res):
     # 使用cursor()方法获取操作游标 
     cursor = db.cursor()
@@ -74,11 +66,13 @@ def sqlInsert(res):
         cursor.execute(sql)
         # 执行sql语句
         db.commit()
+        cursor.close()
     except:
         # 发生错误时回滚
         db.rollback()
         print("wrong")
 
+#数据库查找
 def sqlSelect(Time):
     # 使用cursor()方法获取操作游标 
     cursor = db.cursor()
@@ -94,32 +88,57 @@ def sqlSelect(Time):
         for row in results:
             if row[0].minute - Time.minute == 0 or row[0].minute - Time.minute == 1:
                 if row[0].second - Time.second == 0 or row[0].second - Time.second == 1:
+                    cursor.close()
                     return row[1]
     except:
         print ("Error: unable to fetch data")
 
+#数据封装发送
 def dataFix(data):
     global Time
     data = ast.literal_eval(data)
     now = datetime.datetime.now()
     if(isinstance(data, list) == True):
-        if((now - Time).seconds % 3 == 0):
-            sqlInsert(str(data))
-            Time = now
-            print("mysql load sucess at ")
-            print(Time)
-            print(sqlSelect(Time))
-            res = '{ "data": '+ str(sqlSelect(Time)) +' }'
-            return json.loads(res)
-        else:
-            return '{ "data": "-1" }'
+        sqlInsert(str(data))
+        Time = now
+        print("mysql load sucess at ")
+        print(Time)
+        print(sqlSelect(Time))
+        res = '{ "data": '+ str(sqlSelect(Time)) +' }'
+        return json.loads(res)
     else:
+        print("data is wrong")
+        print(data)
         return '{ "data": "-1" }'
 
+#数据发送
+def dataSend(cursor, sql):
+    try:
+        print("Im trying")
+        db.ping(reconnect = True)
+        # 执行sql语句
+        cursor.execute(sql)
+        print("sql commit sucess")
+        results = cursor.fetchall()
+        if(results):
+            print("fetchall sucess!")
+            myList = []
+            for row in results:
+                myList.append(row[1])
+            res = {"data": myList}
+            cursor.close()
+            return json.dumps(res)
+        else:
+            print("Error:We can't find your data under your time")
+            return '{ "data": "-1" }'
+    except:
+        print("Error:Unexpected wrong")
+        return '{ "data": "-2" }'
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, resources=r'/*')
 
+#实时数据传输
 @app.route('/')
 def data():
     global Time
@@ -153,6 +172,7 @@ def data():
         print("cammer is not open")
         return '{ "data": "-1" }'
 
+#相应数据取出
 @app.route("/find/<num>") 
 def find(num):
     # 使用cursor()方法获取操作游标
@@ -162,85 +182,32 @@ def find(num):
         sql = "SELECT * FROM DATA \
             WHERE TIME > '%s' and TIME < '%s'"%\
             (beginTime.strftime('%Y-%m-%d %H:%M:%S'), (beginTime + datetime.timedelta(minutes=30)).strftime('%Y-%m-%d %H:%M:%S'))
-        try:
-            print("Im trying")
-            db.ping(reconnect = True)
-            # 执行sql语句
-            cursor.execute(sql)
-            print("sql commit sucess")
-            results = cursor.fetchall()
-            if(results == True):
-                print("fetchall sucess!")
-                myList = []
-                for row in results:
-                    myList.append(row[1])
-                res = {"data": myList}
-                return json.dumps(res)
-            else:
-                print("Error:We can't find your data under your time")
-                return '{ "data": "-1" }'
-        except:
-            print("Error:Unexpected wrong")
-            return '{ "data": "-2" }'
+        return dataSend(cursor, sql)
 
     if(num == "2"):
         print("Im in 2 sql!")
         sql = "SELECT * FROM DATA \
             WHERE TIME > '%s' and TIME < '%s'"%\
             ((beginTime + datetime.timedelta(minutes=30)).strftime('%Y-%m-%d %H:%M:%S'), (beginTime + datetime.timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S'))
-        try:
-            print("Im trying")
-            db.ping(reconnect=True)
-            cursor.execute(sql)
-            print("sql commit sucess")
-            results = cursor.fetchall()
-            if(results == True):
-                print("fetchall sucess!")
-                myList = []
-                for row in results:
-                    myList.append(row[1])
-                res = {"data": myList}
-                return json.dumps(res)
-            else:
-                print("Error:We can't find your data under your time")
-                return '{ "data": "-1" }'
-        except:
-            print("Error:Unexpected wrong")
-            return '{ "data": "-2" }'
+        return dataSend(cursor, sql)
     
     if(num == "3"):
         print("Im in 3 sql!")
         sql = "SELECT * FROM DATA \
             WHERE TIME > '%s' and TIME < '%s'"%\
             ((beginTime + datetime.timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S'), (beginTime + datetime.timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S'))
-        try:
-            print("Im trying")
-            db.ping(reconnect=True)
-            cursor.execute(sql)
-            print("sql commit sucess")
-            results = cursor.fetchall()
-            if(results == True):
-                print("fetchall sucess!")
-                myList = []
-                for row in results:
-                    myList.append(row[1])
-                res = {"data": myList}
-                return json.dumps(res)
-            else:
-                print("Error:We can't find your data under your time")
-                return '{ "data": "-1" }'
-        except:
-            print("Error:Unexpected wrong")
-            return '{ "data": "-2" }'
+        return dataSend(cursor, sql)
 
     else:
         return '{ "data": "-1" }'
 
+#时间段数据选择
 @app.route("/find/<beginTime>/<endTime>")
 def findMytime(beginTime, endTime):
     if(beginTime > endTime):
         print("wrong input!")
         return '{ "data": "-3" }'
+    #时间格式整理
     year = str(datetime.datetime.now().year)
     month = str(datetime.datetime.now().month)
     day = str(datetime.datetime.now().day)
@@ -254,27 +221,7 @@ def findMytime(beginTime, endTime):
     sql = "SELECT * FROM DATA \
         WHERE TIME > '%s' and TIME < '%s'"%\
         (begin, end)
-    try:
-        print("Im trying")
-        db.ping(reconnect=True)
-        cursor.execute(sql)
-        print("sql commit sucess")
-        results = cursor.fetchall()
-        if(results == True):
-            print("fetchall sucess!")
-            myList = []
-            for row in results:
-                myList.append(row[1])
-            res = {"data": myList}
-            print(res)
-            print("return sucess!")
-            return json.dumps(res)
-        else:
-            print("Error:We can't find your data under your time")
-            return '{ "data": "-1" }'
-    except:
-        print("Error:Unexpected wrong")
-        return '{ "data": "-2" }'
+    return dataSend(cursor, sql)
 
 if __name__ == '__main__':
    app.run()

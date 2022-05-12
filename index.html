@@ -5,23 +5,46 @@
         <!--引入ECharts文件-->
         <script src = "echarts-5.3.1/dist/echarts.js"></script>
     </head>
-    <body>
+    <body >
         <!-- 为 ECharts 准备一个定义了宽高的 DOM -->
-        <div id="main" style="width: 600px;height:400px;"></div>
-        <div>
-          <button id="thrty" style="margin-left:60px">30分钟内</button>
-          <button id="oneHour1" style="margin-left:20px">30-1小时</button>
-          <button id="oneHour2" style="margin-left:20px">1-2小时</button>
+        <div id="main" style="width: 600px;height:400px;margin: 0 auto;"></div>
+        <div style="display: flex;">
+          <div style="height:600px;padding: 20px;text-align: center;">
+            <div id="main1" style="width: 600px;height:400px;"></div>
+            <button id="thrty" >30分钟内</button>  
+          </div>
+  
+          <div style="height:600px;padding: 20px;text-align: center;">
+            <div id="main2" style="width: 600px;height:400px;"></div>
+            <button id="oneHour1">30-1小时</button> 
+          </div>  
         </div>
-        <div>
-          <input style="margin-left:60px" type="time" id="begin">
-          <input style="margin-left:20px" type="time" id="end">
-          <button id="commit" style="margin-left:20px">提交</button>
+
+
+        <div style="display: flex;">
+          <div style="height:600px;padding: 20px;text-align: center;">
+            <div id="main3" style="width: 600px;height:400px;">cfdsgfdb</div>
+            <button id="oneHour2" style="margin-left:20px">1-2小时</button>
+          </div>
+  
+          <div style="height:600px;padding: 20px;text-align: center;">
+            <div id="main4" style="width: 600px;height:400px;">vsfvsda</div>
+            <div>
+              <input style="margin-left:60px" type="time" id="begin">
+              <input style="margin-left:20px" type="time" id="end">
+              <button id="commit" style="margin-left:20px">提交</button>
+            </div>
+          </div>
+  
         </div>
-        
+
 
         <script type="text/javascript">
           var point = []
+          var point1 = []
+          var point2 = []
+          var point3 = []
+          var point4 = []
           function receive(){
             xmlhttp=new XMLHttpRequest();
             xmlhttp.open("GET","http://127.0.0.1:5000",true);
@@ -39,12 +62,12 @@
                 }
             }
           }
-          setInterval(receive, 2000)
+          setInterval(receive, 5000)
 
           document.getElementById("thrty").addEventListener("click", findTime1)
           function findTime1() {
             num = 1;
-            point.length = 0;
+            point1.length = 0;
             xmlhttp=new XMLHttpRequest();
             xmlhttp.open("GET",`http://127.0.0.1:5000/find/${num}`,true);
             xmlhttp.send();
@@ -54,11 +77,12 @@
               {
                 let res = xmlhttp.response;
                 res = JSON.parse(res).data;
+                console.log(res)
                 if(res == "-1")
                 {
                   alert("你所查找的时间并不存在")
                 }
-                if(res = "-2")
+                if(res == "-2")
                 {
                   alert("未知错误")
                 }
@@ -72,9 +96,9 @@
                         arr.push(parseInt(a))
                       })
                     })
-                    point.push(arr);
+                    point1.push(arr);
                   });
-                  myChart.setOption(option);
+                  myChart1.setOption(option1);
                 }
               }
             }
@@ -83,7 +107,7 @@
           document.getElementById("oneHour1").addEventListener("click", findTime2)
           function findTime2() {
             num = 2;
-            point.length = 0;
+            point2.length = 0;
             xmlhttp = new XMLHttpRequest();
             xmlhttp.open("GET", `http://127.0.0.1:5000/find/${num}`,true);
             xmlhttp.send();
@@ -111,9 +135,9 @@
                         arr.push(parseInt(a))
                       })
                     })
-                    point.push(arr);
+                    point2.push(arr);
                   });
-                  myChart.setOption(option);
+                  myChart2.setOption(option2);
                 }
               }
             }
@@ -122,7 +146,7 @@
           document.getElementById("oneHour2").addEventListener("click", findTime3)
           function findTime3() {
             num = 3;
-            point.length = 0;
+            point3.length = 0;
             xmlhttp = new XMLHttpRequest();
             xmlhttp.open("GET", `http://127.0.0.1:5000/find/${num}`,true);
             xmlhttp.send();
@@ -150,9 +174,9 @@
                         arr.push(parseInt(a))
                       })
                     })
-                    point.push(arr);
+                    point3.push(arr);
                   });
-                  myChart.setOption(option);
+                  myChart3.setOption(option3);
                 }
               }
             }
@@ -160,7 +184,7 @@
 
           document.getElementById("commit").addEventListener("click", findTime4)
           function findTime4(){
-            point.length = 0;
+            point4.length = 0;
             beginTime = document.getElementById("begin").value
             endTime = document.getElementById("end").value
             xmlhttp=new XMLHttpRequest();
@@ -194,9 +218,9 @@
                         arr.push(parseInt(a))
                       })
                     })
-                    point.push(arr);
+                    point4.push(arr);
                   });
-                  myChart.setOption(option);
+                  myChart4.setOption(option4);
                 }
               }
             }
@@ -228,6 +252,111 @@
           };
 
           option && myChart.setOption(option);
+
+          // 基于准备好的dom，初始化echarts实例
+          var chartDom1 = document.getElementById('main1');
+          var myChart1 = echarts.init(chartDom1);
+          var option1;
+
+          option1 = {
+            tooltip: {
+              formatter: '({c})'
+            },
+            xAxis: {
+              name: 'x'
+            },
+            yAxis: {
+              name: 'y'
+            },
+            series: [
+              {
+                type: 'line',
+                clip: true,
+                data:point1,
+                smooth: true,
+              }
+            ]
+          };
+
+          option1 && myChart1.setOption(option1);
+
+          var chartDom2 = document.getElementById('main2');
+          var myChart2 = echarts.init(chartDom2);
+          var option2;
+
+          option2 = {
+            tooltip: {
+              formatter: '({c})'
+            },
+            xAxis: {
+              name: 'x'
+            },
+            yAxis: {
+              name: 'y'
+            },
+            series: [
+              {
+                type: 'line',
+                clip: true,
+                data:point2,
+                smooth: true,
+              }
+            ]
+          };
+
+          option2 && myChart2.setOption(option2);
+
+          var chartDom3 = document.getElementById('main3');
+          var myChart3 = echarts.init(chartDom3);
+          var option3;
+
+          option3 = {
+            tooltip: {
+              formatter: '({c})'
+            },
+            xAxis: {
+              name: 'x'
+            },
+            yAxis: {
+              name: 'y'
+            },
+            series: [
+              {
+                type: 'line',
+                clip: true,
+                data:point3,
+                smooth: true,
+              }
+            ]
+          };
+
+          option3 && myChart3.setOption(option3);
+
+          var chartDom4 = document.getElementById('main4');
+          var myChart4 = echarts.init(chartDom4);
+          var option4;
+
+          option4 = {
+            tooltip: {
+              formatter: '({c})'
+            },
+            xAxis: {
+              name: 'x'
+            },
+            yAxis: {
+              name: 'y'
+            },
+            series: [
+              {
+                type: 'line',
+                clip: true,
+                data:point4,
+                smooth: true,
+              }
+            ]
+          };
+
+          option4 && myChart4.setOption(option4);
         </script>
     </body>
 </html>
